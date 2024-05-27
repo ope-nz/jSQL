@@ -50,16 +50,15 @@ public class SQL implements CheckForReinitialize{
 	@Hide
 	public Connection connection;
 	@Hide
-	public static int THREAD_LOCK_TIMEOUT = 60000;
-	private int QueryTimeout = 60000;
+	public static final int THREAD_LOCK_TIMEOUT = 60000;
+	private int pQueryTimeout = 60000;
 	@Hide
 	public ReentrantLock sqliteLock;
 	private volatile ArrayList<Object[]> nonQueryStatementsList = new ArrayList<Object[]>();
 
 	public void setQueryTimeout(int Timeout)
 	{
-		THREAD_LOCK_TIMEOUT = Timeout;
-		QueryTimeout = Timeout/1000;
+		pQueryTimeout = Timeout/1000;
 	}
 
 	/**
@@ -180,7 +179,7 @@ public class SQL implements CheckForReinitialize{
 	public void ExecNonQuery(String Statement) throws SQLException {
 		checkNull();
 		Statement st = connection.createStatement();
-		st.setQueryTimeout(QueryTimeout);
+		st.setQueryTimeout(pQueryTimeout);
 		try {
 			startLock();
 			st.execute(Statement);
@@ -221,7 +220,7 @@ public class SQL implements CheckForReinitialize{
 	 */
 	public void ExecNonQuery2(String Statement, List Args) throws SQLException {
 		PreparedStatement ps = connection.prepareStatement(Statement);
-		ps.setQueryTimeout(QueryTimeout);
+		ps.setQueryTimeout(pQueryTimeout);
 		try {
 			int numArgs = Args.IsInitialized() == false ? 0 : Args.getSize();
 			for (int i = 0; i < numArgs; i++) {
@@ -287,7 +286,7 @@ public class SQL implements CheckForReinitialize{
 								PreparedStatement ps = cachedPS.get(Statement);
 								if (ps == null) {
 									ps = connection.prepareStatement(Statement);
-									ps.setQueryTimeout(QueryTimeout);
+									ps.setQueryTimeout(pQueryTimeout);
 									cachedPS.put(Statement, ps);
 								}
 								int numArgs = Args.IsInitialized() == false ? 0 : Args.getSize();
@@ -389,7 +388,7 @@ public class SQL implements CheckForReinitialize{
 	public ResultSetWrapper ExecQuery2(String Query, List Args) throws SQLException {
 		checkNull();
 		PreparedStatement ps = connection.prepareStatement(Query);
-		ps.setQueryTimeout(QueryTimeout);
+		ps.setQueryTimeout(pQueryTimeout);
 
 		if (Args != null && Args.IsInitialized()) {
 			for (int i = 0;i < Args.getSize();i++) {
